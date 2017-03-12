@@ -1,7 +1,6 @@
 import datetime
 
 from flask import Flask
-
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -28,23 +27,25 @@ class Student(db.Model):
         self.parentEmail = parentEmail
         self.status = status
 
+        def __repr__(self):
+            name = self.firstName + " " + self.lastName
+            return "Student Info: " + name + ", " + self.advisor
 
-def studentFromString(string):
-    array = string.split(",")
-
-    if array.length == 5:
-        name = array[0]
-        advisor = array[1]
-        grade = int(array[2])
-        parentEmail = array[3]
-        status = array[4]
-        return Student(name, advisor, grade, parentEmail, status)
-    else:
-        print("Not Propper String")
+        @property
+        def json(self):
+            return {
+                "firstName": self.firstName,
+                "lastName": self.lastName,
+                "advisor": self.advisor,
+                "grade": self.grade,
+                "parentEmail": self.parentEmail,
+                "status": self.status
+            }
 
 
 def studentToString(student):
-    output = student.name + ", "
+    output = student.firstName + ", "
+    output += student.lastName + ", "
     output += student.advisor + ", "
     output += student.grade + ", "
     output += student.parentEmail + ", "
@@ -52,31 +53,33 @@ def studentToString(student):
 
     return output
 
-    def __repr__(self):
-        return "Student Info: " + self.name + ", " + self.advisor
 
-    @property
-    def json(self):
-        return {
-            "name": self.name,
-            "advisor": self.advisor,
-            "grade": self.grade,
-            "parentEmail": self.parentEmail
-        }
+def studentFromString(string):
+    array = string.split(",")
+
+    if array.length == 5:
+        first = array[0]
+        last = array[1]
+        advisor = array[2]
+        grade = int(array[3])
+        parentEmail = array[4]
+        status = array[5]
+        return Student(first, last, advisor, grade, parentEmail, status)
+
+    else:
+        print("Not Propper String")
 
 
 @app.route("/")
 def hello():
-    # s = Student("EJ Eppinger", 12, "Nassar", "parentemail@email.com", "p")
+    # s = Student("EJ", Eppinger", 12, "Nassar", "parentemail@email.com", "p")
     # print(s)
     return "Hello World!"
 
 
 def loadFromCSV():
     students = []
-
     currentStudents = open("current_students.csv", "r")
-
     currentStudentsStringArray = currentStudents.read().split("\n")
 
     for string in currentStudentsStringArray:
