@@ -2,19 +2,27 @@ import datetime
 
 from flask import Flask
 
+from flask_sqlalchemy import SQLAlchemy
+
 app = Flask(__name__)
 
+URI = "sqlite:////tmp/test.db"
+app.config['SQLALCHEMY_DATABASE_URI'] = URI
+db = SQLAlchemy(app)
 
-class Student():
 
-    name = ""
-    advisor = ""
-    grade = 0
-    parentEmail = ""
-    status = ""
+class Student(db.Model):
+    __tablename__ = 'UserRemap'
+    firstName = db.Column(db.String, primary_key=True)
+    lastName = db.Column(db.String, primary_key=True)
+    advisor = db.Column(db.String)
+    grade = db.Column(db.Integer)
+    parentEmail = db.Column(db.String)
+    status = db.Column(db.String)
 
-    def __init__(self, name, grade, advisor, parentEmail, status):
-        self.name = name
+    def __init__(self, first, last, grade, advisor, parentEmail, status):
+        self.firstName = first
+        self.lastName = last
         self.advisor = advisor
         self.grade = grade
         self.parentEmail = parentEmail
@@ -43,6 +51,18 @@ def studentToString(student):
     output += student.status
 
     return output
+
+    def __repr__(self):
+        return "Student Info: " + self.name + ", " + self.advisor
+
+    @property
+    def json(self):
+        return {
+            "name": self.name,
+            "advisor": self.advisor,
+            "grade": self.grade,
+            "parentEmail": self.parentEmail
+        }
 
 
 @app.route("/")
