@@ -1,5 +1,7 @@
 import datetime
 
+import IPython
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
@@ -11,6 +13,7 @@ db = SQLAlchemy(app)
 
 
 class Student(db.Model):
+
     __tablename__ = 'UserRemap'
     firstName = db.Column(db.String, primary_key=True)
     lastName = db.Column(db.String, primary_key=True)
@@ -20,6 +23,7 @@ class Student(db.Model):
     status = db.Column(db.String)
 
     def __init__(self, first, last, grade, advisor, parentEmail, status):
+
         self.firstName = first
         self.lastName = last
         self.advisor = advisor
@@ -28,11 +32,13 @@ class Student(db.Model):
         self.status = status
 
         def __repr__(self):
+
             name = self.firstName + " " + self.lastName
             return "Student Info: " + name + ", " + self.advisor
 
         @property
         def json(self):
+
             return {
                 "firstName": self.firstName,
                 "lastName": self.lastName,
@@ -44,10 +50,11 @@ class Student(db.Model):
 
 
 def studentToString(student):
+
     output = student.firstName + ", "
     output += student.lastName + ", "
-    output += student.advisor + ", "
-    output += student.grade + ", "
+    output += str(student.advisor) + ", "
+    output += str(student.grade) + ", "
     output += student.parentEmail + ", "
     output += student.status
 
@@ -55,9 +62,11 @@ def studentToString(student):
 
 
 def studentFromString(string):
+
     array = string.split(",")
 
-    if array.length == 5:
+    if len(array) == 6:
+
         first = array[0]
         last = array[1]
         advisor = array[2]
@@ -72,12 +81,14 @@ def studentFromString(string):
 
 @app.route("/")
 def hello():
+
     # s = Student("EJ", Eppinger", 12, "Nassar", "parentemail@email.com", "p")
     # print(s)
     return "Hello World!"
 
 
 def loadFromCSV():
+
     students = []
     currentStudents = open("current_students.csv", "r")
     currentStudentsStringArray = currentStudents.read().split("\n")
@@ -91,8 +102,7 @@ def loadFromCSV():
 def exportToCSV(students):
 
     now = datetime.datetime.now()
-
-    output = open(now.year + "_" + now.month + "_" + now.day + ".csv", "w")
+    output = open(str(now.year) + "_" + str(now.month) + "_" + str(now.day) + ".csv", "w")
 
     for student in students:
         output.write(studentToString(student) + "\n")
@@ -101,5 +111,5 @@ def exportToCSV(students):
 
 
 if __name__ == "__main__":
-
     app.run()
+    IPython.embed()
