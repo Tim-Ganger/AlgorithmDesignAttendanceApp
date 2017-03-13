@@ -102,7 +102,8 @@ def loadFromCSV():
 def exportToCSV(students):
 
     now = datetime.datetime.now()
-    output = open(str(now.year) + "_" + str(now.month) + "_" + str(now.day) + ".csv", "w")
+    fileName = str(now.year) + "_" + str(now.month) + "_" + str(now.day)
+    output = open(fileName + ".csv", "w")
 
     for student in students:
         output.write(studentToString(student) + "\n")
