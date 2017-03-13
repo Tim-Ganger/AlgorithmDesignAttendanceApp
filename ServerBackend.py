@@ -18,11 +18,12 @@ class Student(db.Model):
     firstName = db.Column(db.String, primary_key=True)
     lastName = db.Column(db.String, primary_key=True)
     advisor = db.Column(db.String)
-    grade = db.Column(db.Integer)
+    grade = db.Column(db.String)
     parentEmail = db.Column(db.String)
     status = db.Column(db.String)
+    lateTime = db.Column(db.Time)
 
-    def __init__(self, first, last, grade, advisor, parentEmail, status):
+    def __init__(self, first, last, grade, advisor, parentEmail, status, lateTime=None):
 
         self.firstName = first
         self.lastName = last
@@ -30,6 +31,9 @@ class Student(db.Model):
         self.grade = grade
         self.parentEmail = parentEmail
         self.status = status
+
+        if status != "p" and lateTime is not None:
+            self.lateTime = lateTime
 
         def __repr__(self):
 
@@ -53,8 +57,8 @@ def studentToString(student):
 
     output = student.firstName + ", "
     output += student.lastName + ", "
-    output += str(student.advisor) + ", "
-    output += str(student.grade) + ", "
+    output += student.advisor + ", "
+    output += student.grade + ", "
     output += student.parentEmail + ", "
     output += student.status
 
@@ -65,14 +69,23 @@ def studentFromString(string):
 
     array = string.split(",")
 
+    if len(array) == 4:
+        first = array[0].strip()
+        last = array[1].strip()
+        grade = array[2].strip()
+        advisor = array[3].strip()
+        parentEmail = ""
+        status = ""
+        return Student(last, first, grade, advisor, parentEmail, status)
+
     if len(array) == 6:
 
-        first = array[0]
-        last = array[1]
-        advisor = array[2]
-        grade = int(array[3])
-        parentEmail = array[4]
-        status = array[5]
+        first = array[0].strip()
+        last = array[1].strip()
+        grade = array[2].strip()
+        advisor = array[3].strip()
+        parentEmail = array[4].strip()
+        status = array[5].strip()
         return Student(first, last, advisor, grade, parentEmail, status)
 
     else:
@@ -82,7 +95,7 @@ def studentFromString(string):
 @app.route("/")
 def hello():
 
-    # s = Student("EJ", Eppinger", 12, "Nassar", "parentemail@email.com", "p")
+    # s = Student("EJ", Eppinger", "12th Grade", "Nassar", "parentemail@email.com", "p")
     # print(s)
     return "Hello World!"
 
@@ -92,11 +105,14 @@ def loadFromCSV():
     students = []
     currentStudents = open("current_students.csv", "r")
     currentStudentsStringArray = currentStudents.read().split("\n")
+    currentStudentsStringArray.remove(currentStudentsStringArray[0])
+    # currentStudentsStringArray.remove("")
+    currentStudents.close()
 
     for string in currentStudentsStringArray:
         students.append(studentFromString(string))
 
-    currentStudents.close()
+    return students
 
 
 def exportToCSV(students):
