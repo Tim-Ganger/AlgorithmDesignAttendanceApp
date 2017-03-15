@@ -1,68 +1,60 @@
 import datetime
+
 import IPython
-from flask import Flask
+
+from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 
-# Basic setup for app with Flask and SQLAlchemy
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
+
+URI = "sqlite:////tmp/test.db"
+app.config['SQLALCHEMY_DATABASE_URI'] = URI
 db = SQLAlchemy(app)
 
 
 class Student(db.Model):
-    """Class to hold information for Student."""
 
-    # Initialize instance variables.
-    __tablename__ = 'UserRemap'
-    firstName = db.Column(db.String, primary_key=True)
-    lastName = db.Column(db.String, primary_key=True)
+    __tablename__ = 'StudentTable'
+    firstName = db.Column(db.String, unique = False, primary_key = True)
+    lastName = db.Column(db.String)
     advisor = db.Column(db.String)
     grade = db.Column(db.String)
-    parentEmail = db.Column(db.String)
-    status = db.Column(db.String)
-    lateTime = db.Column(db.Time)
 
-    def __init__(self, first, last, grade, advisor, parentEmail, status):
-        """Default constructor for Student class."""
+    status = db.Column(db.String)
+
+    def __init__(self, first, last, grade, advisor, status):
 
         self.firstName = first
         self.lastName = last
         self.advisor = advisor
         self.grade = grade
-        self.parentEmail = parentEmail
+
         self.status = status
-        if status != "p" and lateTime is not None:
-            self.lateTime = lateTime
 
-        def __repr__(self):
-            """Make student class print to console cleanly for testing."""
+    def __repr__(self):
 
-            name = self.firstName + " " + self.lastName
-            return "Student Info: " + name + ", " + self.advisor
+        name = self.firstName + " " + self.lastName
+        return "Student Info: " + name + ", " + self.advisor
 
+    @property
+    def json(self):
 
-        @property
-        def json(self):
-            """Allow the json representation of the Student to be accessed as a
-            property using .json"""
-
-            return {
-                "firstName": self.firstName,
-                "lastName": self.lastName,
-                "advisor": self.advisor,
-                "grade": self.grade,
-                "parentEmail": self.parentEmail,
-                "status": self.status
-            }
+        return {
+            "firstName": self.firstName,
+            "lastName": self.lastName,
+            "advisor": self.advisor,
+            "grade": self.grade,
+            "parentEmail": self.parentEmail,
+            "status": self.status
+        }
 
 
 def studentToString(student):
 
     output = student.firstName + ", "
     output += student.lastName + ", "
-    output += student.advisor + ", "
-    output += student.grade + ", "
-    output += student.parentEmail + ", "
+    output += str(student.advisor) + ", "
+    output += str(student.grade) + ", "
     output += student.status
 
     return output
@@ -73,34 +65,55 @@ def studentFromString(string):
     array = string.split(",")
 
     if len(array) == 4:
-        first = array[0].strip()
-        last = array[1].strip()
-        grade = array[2].strip()
-        advisor = array[3].strip()
-        parentEmail = ""
-        status = ""
-        return Student(last, first, grade, advisor, parentEmail, status)
 
-    if len(array) == 6:
-
-        first = array[0].strip()
-        last = array[1].strip()
-        grade = array[2].strip()
-        advisor = array[3].strip()
-        parentEmail = array[4].strip()
-        status = array[5].strip()
-        return Student(first, last, advisor, grade, parentEmail, status)
+        last = array[0]
+        first = array[1]
+        advisor = array[3]
+        grade = array[2]
+        status = "p"
+        return Student(first, last, advisor, grade, status)
 
     else:
-        print("Not Propper String")
+        print("Not Proper String")
 
 
 @app.route("/")
 def hello():
 
-    # s = Student("EJ", Eppinger", "12th Grade", "Nassar", "parentemail@email.com", "p")
+    # s = Student("EJ", Eppinger", 12, "Nassar", "parentemail@email.com", "p")
     # print(s)
     return "Hello World!"
+
+@app.route("/test")
+def testingSearch():
+    s = Student("EJ", "NSMYTDM", 12, "Nassar", "p")
+    db.session.add(s)
+    db.session.commit()
+    print(studentsInAdvisory("Nassar"))
+    return "If you can read this, the code ran properly. O frabjuous day, O frabjuous day!"
+    #return studentsInAdvisory(s.advisor)
+
+def students():
+    data = [student.json for student in Student.query.all()]
+    return jsonify(data)
+
+def studentsInAdvisory(advisor):
+    data = [Student.json for Student in Student.query.filter(Student.advisor == advisor).all()]
+    return data
+
+@app.route("/students/<student>", methods=["GET","POST"])
+def add_student(student):
+    #advisor = request.json["advisor"]
+    student_record = Student(student, "LastName", 11, "Nassar", "p")
+    db.session.add(student_record)
+    db.session.commit()
+    return "jsonify(student_record.json)"
+
+
+@app.route("/create")
+def makeItSo():
+    loadFromCSV()
+    return "For 10 points, this mathematition invented taxicab numbers."
 
 
 def loadFromCSV():
@@ -108,14 +121,13 @@ def loadFromCSV():
     students = []
     currentStudents = open("current_students.csv", "r")
     currentStudentsStringArray = currentStudents.read().split("\n")
-    currentStudentsStringArray.remove(currentStudentsStringArray[0])
-    # currentStudentsStringArray.remove("")
-    currentStudents.close()
 
     for string in currentStudentsStringArray:
         students.append(studentFromString(string))
 
-    return students
+
+
+    currentStudents.close()
 
 
 def exportToCSV(students):
