@@ -89,7 +89,7 @@ ENV/
 .ropeproject
 
 # Database information
-.csv
-.db
-.CSV
-.DB
+*.csv
+*.db
+*.CSV
+*.DB
