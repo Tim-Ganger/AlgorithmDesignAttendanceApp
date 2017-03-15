@@ -1,19 +1,18 @@
 import datetime
-
 import IPython
-
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
-app = Flask(__name__)
-
-URI = "sqlite:////tmp/test.db"
-app.config['SQLALCHEMY_DATABASE_URI'] = URI
+# Basic setup for app with Flask and SQLAlchemy
+laapp = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
 db = SQLAlchemy(app)
 
 
 class Student(db.Model):
+    """Class to hold information for Student."""
 
+    # Initialize instance variables.
     __tablename__ = 'UserRemap'
     firstName = db.Column(db.String, primary_key=True)
     lastName = db.Column(db.String, primary_key=True)
@@ -23,7 +22,8 @@ class Student(db.Model):
     status = db.Column(db.String)
     lateTime = db.Column(db.Time)
 
-    def __init__(self, first, last, grade, advisor, parentEmail, status, lateTime=None):
+    def __init__(self, first, last, grade, advisor, parentEmail, status):
+        """Default constructor for Student class."""
 
         self.firstName = first
         self.lastName = last
@@ -31,17 +31,20 @@ class Student(db.Model):
         self.grade = grade
         self.parentEmail = parentEmail
         self.status = status
-
         if status != "p" and lateTime is not None:
             self.lateTime = lateTime
 
         def __repr__(self):
+            """Make student class print to console cleanly for testing."""
 
             name = self.firstName + " " + self.lastName
             return "Student Info: " + name + ", " + self.advisor
 
+
         @property
         def json(self):
+            """Allow the json representation of the Student to be accessed as a
+            property using .json"""
 
             return {
                 "firstName": self.firstName,
