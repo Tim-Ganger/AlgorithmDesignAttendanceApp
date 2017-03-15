@@ -4,7 +4,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
 # Basic setup for app with Flask and SQLAlchemy
-laapp = Flask(__name__)
+app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
 db = SQLAlchemy(app)
 
